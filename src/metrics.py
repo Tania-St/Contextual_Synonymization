@@ -10,6 +10,16 @@ from sklearn.metrics import (
     silhouette_score
 )
 
+
+def safe_silhouette(X, labels):
+    labels = np.array(labels)
+    n_labels = len(set(labels))
+
+    if n_labels < 2 or n_labels >= len(X):
+        return 0.0
+
+    return silhouette_score(X, labels)
+
 def purity_score(y_true, y_pred):
     df = pd.DataFrame({"true": y_true, "pred": y_pred})
     total = 0
@@ -32,9 +42,9 @@ def pairwise_metrics(labels_gold, labels_pred):
 
     df_pairs = pd.DataFrame(pairs, columns=["gold_same", "pred_same"])
 
-    precision = precision_score(df_pairs["gold_same"], df_pairs["pred_same"])
-    recall = recall_score(df_pairs["gold_same"], df_pairs["pred_same"])
-    f1 = f1_score(df_pairs["gold_same"], df_pairs["pred_same"])
+    precision = precision_score(df_pairs["gold_same"], df_pairs["pred_same"], zero_division=0)
+    recall = recall_score(df_pairs["gold_same"], df_pairs["pred_same"], zero_division=0)
+    f1 = f1_score(df_pairs["gold_same"], df_pairs["pred_same"], zero_division=0)
 
     return precision, recall, f1
 
@@ -46,7 +56,8 @@ def compute_metrics(labels_gold, labels_pred, X, term, k, setting):
     nmi = normalized_mutual_info_score(labels_gold, labels_pred)
     purity = purity_score(labels_gold, labels_pred)
 
-    sil = silhouette_score(X, labels_pred) if len(np.unique(labels_pred)) > 1 else 0
+    from .metrics import safe_silhouette
+    sil = safe_silhouette(X, labels_pred)
 
     return {
         "term": term,
@@ -60,3 +71,43 @@ def compute_metrics(labels_gold, labels_pred, X, term, k, setting):
         "NMI": nmi,
         "purity": purity
     }
+
+
+def show_clusters(texts, labels, gold_labels, n_examples=5):
+
+    df = pd.DataFrame({
+        "text": texts,
+        "cluster": labels,
+        "gold": gold_labels
+    })
+
+    for cluster in sorted(df["cluster"].unique()):
+        print(f"\n=== CLUSTER {cluster} ===")
+
+        subset = df[df["cluster"] == cluster]
+
+        print("Top examples:")
+        for t in subset["text"].head(n_examples):
+            print("-", t)
+
+        print("Gold distribution:")
+        print(subset["gold"].value_counts())
+
+
+def show_mismatches(texts, gold, pred, n=10):
+
+    import pandas as pd
+
+    df = pd.DataFrame({
+        "text": texts,
+        "gold": gold,
+        "pred": pred
+    })
+
+    mismatches = df[df["gold"] != df["pred"]]
+
+    print("\n=== MISCLASSIFIED EXAMPLES ===")
+
+    for i, row in mismatches.head(n).iterrows():
+        print("\nTEXT:", row["text"])
+        print("GOLD:", row["gold"], "PRED:", row["pred"])

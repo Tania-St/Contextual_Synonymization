@@ -30,6 +30,7 @@ def find_best_k(X, k_min=1, k_max=5):
 
 
 def cluster_embeddings(X, n_clusters):
+    n_clusters = min(n_clusters, len(X) - 1)
     kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     labels = kmeans.fit_predict(X)
 
@@ -53,6 +54,24 @@ def find_best_k_agglomerative(X, k_min=2, k_max=5):
     max_k = min(k_max, len(X) - 1)
 
     for k in range(k_min, max_k + 1):
+        labels = AgglomerativeClustering(n_clusters=k).fit_predict(X)
+        score = silhouette_score(X, labels)
+
+        scores[k] = score
+
+        if score > best_score:
+            best_score = score
+            best_k = k
+
+    return best_k, best_score, scores
+
+
+def find_best_k_hybrid(X, k_min=2, k_max=6):
+    best_k = k_min
+    best_score = -1
+    scores = {}
+
+    for k in range(k_min, min(k_max, len(X)-1)+1):
         labels = AgglomerativeClustering(n_clusters=k).fit_predict(X)
         score = silhouette_score(X, labels)
 
