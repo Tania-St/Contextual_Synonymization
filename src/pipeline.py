@@ -21,9 +21,8 @@ def run_pipeline(
     forced_k=None,
     embedding_type="mask"
 ):
-    # -------------------------
+    
     # 1. PREPROCESSING
-    # -------------------------
     texts = df_anno["context"].tolist()
     term = df_anno["word"].iloc[0]
 
@@ -32,9 +31,7 @@ def run_pipeline(
 
     labels_gold = df_anno.loc[df_term["index"], "gold_sense"].tolist()
 
-    # -------------------------
     # 2. EMBEDDINGS
-    # -------------------------
     if embedding_type == "mask":
         X = embed_masked(anon_texts, tokenizer, model, device)
 
@@ -47,9 +44,7 @@ def run_pipeline(
     else:
         raise ValueError("embedding_type must be 'mask' or 'cls'")
 
-    # -------------------------
     # 3. SELECT K
-    # -------------------------
     if k_mode == "auto":
 
         if method == "kmeans":
@@ -70,9 +65,7 @@ def run_pipeline(
         best_k = forced_k
         setting = "forced_k"
 
-    # -------------------------
     # 4. CLUSTERING
-    # -------------------------
     if method == "kmeans":
         labels_pred, sil = cluster_embeddings(X, best_k)
 
@@ -98,9 +91,8 @@ def run_pipeline(
     else:
         raise ValueError(f"Unknown method: {method}")
 
-    # -------------------------
+
     # 5. METRICS
-    # -------------------------
     metrics = compute_metrics(
         labels_gold,
         labels_pred,

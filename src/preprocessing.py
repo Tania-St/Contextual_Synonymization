@@ -8,7 +8,7 @@ def prepare_dataframe(texts, term):
         if re.search(rf"\b{term}\b", t, re.IGNORECASE):
             masked = re.sub(rf"\b{term}\b", "[MASK]", t, flags=re.IGNORECASE)
             rows.append({
-                "index": i,  # ВАЖНО
+                "index": i,
                 "text": t,
                 "anon_text": masked
             })

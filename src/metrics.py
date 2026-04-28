@@ -82,21 +82,19 @@ def show_clusters(texts, labels, gold_labels, n_examples=5):
     })
 
     for cluster in sorted(df["cluster"].unique()):
-        print(f"\n=== CLUSTER {cluster} ===")
+        print(f"\ncluster {cluster} ")
 
         subset = df[df["cluster"] == cluster]
 
-        print("Top examples:")
+        print("top examples:")
         for t in subset["text"].head(n_examples):
             print("-", t)
 
-        print("Gold distribution:")
+        print("gold distribution:")
         print(subset["gold"].value_counts())
 
 
 def show_mismatches(texts, gold, pred, n=10):
-
-    import pandas as pd
 
     df = pd.DataFrame({
         "text": texts,
@@ -106,8 +104,8 @@ def show_mismatches(texts, gold, pred, n=10):
 
     mismatches = df[df["gold"] != df["pred"]]
 
-    print("\n=== MISCLASSIFIED EXAMPLES ===")
+    print("\n misclassified examples")
 
     for i, row in mismatches.head(n).iterrows():
-        print("\nTEXT:", row["text"])
-        print("GOLD:", row["gold"], "PRED:", row["pred"])
+        print("\ntext:", row["text"])
+        print("gold:", row["gold"], "pred:", row["pred"])
