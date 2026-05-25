@@ -106,6 +106,7 @@ def run_pipeline(
         "metrics": metrics,
         "labels": labels_pred,
         "texts": anon_texts,
+        "original_texts": texts,
         "gold": labels_gold,
         "X": X
     }
